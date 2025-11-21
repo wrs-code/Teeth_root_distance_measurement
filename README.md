@@ -343,109 +343,78 @@ python batch_process_teeth.py \
 
 ### 选项2: 训练牙齿专用模型（推荐）✅
 
-这是正确的使用方式，需要：
+这是正确的使用方式。**本仓库已提供完整的训练方案！**
 
-#### 步骤1: 获取UFBA-425数据集
+#### 🚀 快速开始训练
 
+**数据集已包含**：Instance_seg_teeth/Dataset/yolo_train_dataset/ (1022张图像，包含训练/验证/测试集)
+
+**一键训练**：
 ```bash
-# 1. 访问FigShare下载数据集
-# https://figshare.com/articles/dataset/UFBA-425/29827475
+# 方法1: 使用训练脚本（推荐）
+./train_yolov8.sh
 
-# 2. 或使用Roboflow（如notebooks中所示）
-# 需要Roboflow API key
-```
+# 方法2: 使用Python脚本
+python train_yolov8_teeth.py --data yolo_training_config.yaml
 
-#### 步骤2: 训练YOLOv8模型
-
-使用开源仓库提供的训练notebook：
-
-```bash
-# 打开训练notebook
-jupyter notebook Instance_seg_teeth/notebooks/yolov8/yolov8_train.ipynb
-
-# 或使用命令行训练
-cd Instance_seg_teeth
-# 准备好数据后运行
+# 方法3: 使用YOLO CLI
 yolo task=detect mode=train \
     model=yolov8x.pt \
-    data=./data.yaml \
+    data=yolo_training_config.yaml \
     epochs=30 \
     batch=10 \
     imgsz=640
 ```
 
-**训练参数说明**（来自原始notebook）：
-- `model=yolov8x.pt`: 使用通用YOLOv8x作为**预训练基础**
-- `epochs=30`: 在牙齿数据集上fine-tune 30轮
-- `dropout=0.6`: dropout率
-- `warmup_epochs=10`: 预热轮数
+**训练配置（官方最佳）**：
+- ✅ 严格遵循Instance_seg_teeth官方训练流程
+- ✅ 模型：yolov8x（最大模型，最佳精度）
+- ✅ 预期效果：mAP=74.9%, AP50=94.6%（论文报告）
+- ✅ 训练时间：2-4小时（RTX 3090）
 
-训练完成后，模型权重保存在 `runs/detect/train/weights/best.pt`
+**详细文档**：
+- 📖 [完整训练指南](./TRAINING_GUIDE.md) - 所有细节和故障排除
+- 🚀 [快速开始](./QUICKSTART_TRAINING.md) - 5分钟快速上手
+
+#### 步骤1: 环境准备
+
+```bash
+# 安装训练依赖
+pip install ultralytics==8.0.28
+
+# 验证CUDA
+python -c "import torch; print(f'CUDA: {torch.cuda.is_available()}')"
+```
+
+#### 步骤2: 开始训练
+
+```bash
+# 使用官方最佳配置训练
+python train_yolov8_teeth.py --data yolo_training_config.yaml
+```
 
 #### 步骤3: 使用训练好的模型
 
 ```bash
+# 批量处理
 python batch_process_teeth.py \
     --input_dir ./test_images \
-    --yolo_weights ./runs/detect/train/weights/best.pt
+    --yolo_weights ./runs/detect/teeth_detection_TIMESTAMP/weights/best.pt
+
+# 或快速预测
+yolo predict model=./runs/detect/teeth_detection_TIMESTAMP/weights/best.pt source=./test_images
 ```
 
-### UNet模型训练
+训练完成后的模型位置：`runs/detect/teeth_detection_TIMESTAMP/weights/best.pt`
 
-同样需要自己训练：
+---
 
-```bash
-# 打开UNet训练notebook
-jupyter notebook Instance_seg_teeth/notebooks/Unet/unet_training.ipynb
+### 为什么必须训练专用模型？
 
-# 或YOLOv8+UNet联合训练
-jupyter notebook Instance_seg_teeth/notebooks/yolov8+unet/yolov8+unet_training.ipynb
-```
-
-训练后保存为`.h5`文件使用。
-
-### 训练时间估算
-
-| 模型 | GPU | 大约时间 | 数据集 |
-|-----|-----|---------|--------|
-| YOLOv8x | RTX 3090 | 2-4小时 | UFBA-425 (425张) |
-| UNet | RTX 3090 | 3-6小时 | UFBA-425 |
-| YOLOv8+UNet | RTX 3090 | 5-10小时 | UFBA-425 |
-
-### 为什么需要训练？
-
-1. **域适应**: 牙科X光图像与自然图像差异很大
+1. **域适应**: 牙科X光图像与通用图像差异巨大
 2. **专业标注**: 32类牙齿的精确定位需要专门训练
 3. **高精度**: 论文报告的mAP 74.9%是在牙齿数据集上训练得到的
-
-### 快速测试Pipeline（不训练）
-
-如果您只是想测试批量处理pipeline是否工作：
-
-```bash
-# 1. 使用通用YOLOv8模型（会有很多误检）
-wget https://github.com/ultralytics/assets/releases/download/v0.0.0/yolov8x.pt
-
-# 2. 运行（会生成输出，但检测结果不准确）
-python batch_process_teeth.py \
-    --input_dir ./test_images \
-    --yolo_weights ./yolov8x.pt
-
-# 3. 检查输出结构是否正确
-ls output/batch_*/
-```
-
-### 数据集下载
-
-**UFBA-425数据集**:
-- 📊 425张牙科全景X光图像
-- 🦷 32类牙齿的instance segmentation标注
-- 📦 边界框和FDI编号系统
-- 🔗 [FigShare下载](https://figshare.com/articles/dataset/UFBA-425/29827475)
-
-**Roboflow版本**（notebooks中使用）:
-- 需要API key
-- 在notebook中有说明
+4. **通用模型无效**: COCO预训练模型不包含"牙齿"类别
 
 ## Performance Tips
 
