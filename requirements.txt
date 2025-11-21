@@ -2,6 +2,12 @@
 # TensorFlow 2.13 is compatible with CUDA 11.8
 tensorflow==2.13.0
 
+# PyTorch with CUDA 11.8 support (required by ultralytics)
+# Install from PyTorch index to get CUDA 11.8 version
+--extra-index-url https://download.pytorch.org/whl/cu118
+torch==2.1.0+cu118
+torchvision==0.16.0+cu118
+
 # YOLOv8 for teeth detection
 ultralytics==8.0.28
 
