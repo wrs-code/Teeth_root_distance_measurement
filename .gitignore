@@ -10,6 +10,9 @@ results/
 runs/
 *.log
 
+# Auto-generated config files
+yolo_training_config_auto.yaml
+
 # Python
 __pycache__/
 *.py[cod]

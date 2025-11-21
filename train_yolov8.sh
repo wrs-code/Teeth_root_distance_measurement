@@ -12,12 +12,26 @@ echo "=========================================="
 echo ""
 
 # Configuration
-DATA_YAML="yolo_training_config.yaml"
 MODEL="yolov8x.pt"
 EPOCHS=30
 BATCH=10
 IMGSZ=640
 DEVICE="0"
+
+# Generate config file with absolute paths for current user
+echo "Generating configuration file with absolute paths..."
+if [ -f "generate_config.py" ]; then
+    python generate_config.py
+    if [ $? -ne 0 ]; then
+        echo "ERROR: Failed to generate configuration file"
+        exit 1
+    fi
+    DATA_YAML="yolo_training_config_auto.yaml"
+else
+    echo "WARNING: generate_config.py not found, using template config"
+    DATA_YAML="yolo_training_config.yaml"
+fi
+echo ""
 
 # Check if data.yaml exists
 if [ ! -f "$DATA_YAML" ]; then
