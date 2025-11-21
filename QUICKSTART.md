@@ -71,36 +71,62 @@ pip install -r requirements.txt
 
 ### 步骤2: 准备模型权重
 
+#### ⚠️ 重要：开源仓库未提供预训练的牙齿模型！
+
+**Instance_seg_teeth仓库没有提供训练好的模型文件**，您需要：
+- 自己训练模型（推荐，2-4小时）
+- 或使用通用YOLOv8模型快速测试（效果很差，仅用于测试pipeline）
+
+---
+
 #### YOLOv8模型
 
-**选项1: 使用预训练模型 (快速测试)**
+**选项1: 使用通用YOLOv8模型（⚠️ 仅测试pipeline，检测效果差）**
 
 ```bash
-# 下载YOLOv8x预训练模型
+# 下载通用YOLOv8模型（在COCO数据集上训练，不认识牙齿）
 wget https://github.com/ultralytics/assets/releases/download/v0.0.0/yolov8x.pt
 
-# 或者使用其他变体
-# yolov8n.pt - nano (最快，准确度较低)
-# yolov8s.pt - small
-# yolov8m.pt - medium
-# yolov8l.pt - large
-# yolov8x.pt - extra large (最慢，准确度最高)
+# ⚠️ 警告：此模型不包含牙齿类别，会将牙齿识别为其他物体
+# 只能用于测试代码是否运行，不能用于实际牙齿检测
 ```
 
-**选项2: 使用训练好的牙齿专用模型**
+**为什么通用模型不行？**
+- COCO数据集：人、车、动物等80类（❌ 无牙齿）
+- 会误检牙齿为其他物体
+- 仅用于验证pipeline是否工作
 
-如果您有训练好的模型，直接使用即可：
+**选项2: 训练牙齿专用模型（✅ 推荐）**
+
+这是正确的使用方式：
+
 ```bash
-# 假设您的模型在models目录下
+# 1. 下载UFBA-425数据集
+# 访问: https://figshare.com/articles/dataset/UFBA-425/29827475
+
+# 2. 使用训练notebook
+jupyter notebook Instance_seg_teeth/notebooks/yolov8/yolov8_train.ipynb
+
+# 3. 或命令行训练（数据准备好后）
+yolo task=detect mode=train \
+    model=yolov8x.pt \
+    data=./data.yaml \
+    epochs=30 \
+    batch=10 \
+    imgsz=640
+
+# 4. 训练完成后使用
+# 模型保存在: runs/detect/train/weights/best.pt
+```
+
+**训练时间**：RTX 3090约2-4小时（425张图像）
+
+**选项3: 使用已有的牙齿专用模型**
+
+如果您已经训练好或获得了模型：
+```bash
 ls models/
 # yolo_teeth_best.pt
-```
-
-**选项3: 训练自己的模型**
-
-参考 `Instance_seg_teeth/notebooks/yolov8/` 中的notebook：
-```bash
-jupyter notebook Instance_seg_teeth/notebooks/yolov8/yolov8_train.ipynb
 ```
 
 #### UNet模型 (可选)
