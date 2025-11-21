@@ -12,7 +12,6 @@ echo "=========================================="
 echo ""
 
 # Configuration
-DATA_YAML="yolo_training_config.yaml"
 MODEL="yolov8x.pt"
 EPOCHS=30
 BATCH=10
@@ -27,6 +26,10 @@ if [ -f "generate_config.py" ]; then
         echo "ERROR: Failed to generate configuration file"
         exit 1
     fi
+    DATA_YAML="yolo_training_config_auto.yaml"
+else
+    echo "WARNING: generate_config.py not found, using template config"
+    DATA_YAML="yolo_training_config.yaml"
 fi
 echo ""
 

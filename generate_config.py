@@ -36,8 +36,8 @@ config = {
     }
 }
 
-# Save to file
-output_file = 'yolo_training_config.yaml'
+# Save to file (use a different name to avoid overwriting the template)
+output_file = 'yolo_training_config_auto.yaml'
 with open(output_file, 'w') as f:
     f.write("# YOLOv8 Training Configuration for Teeth Detection\n")
     f.write("# Dataset: UFBA-425 (Roboflow version with augmentation)\n")

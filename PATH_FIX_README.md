@@ -18,8 +18,12 @@
 
 脚本会自动：
 1. 检测你的当前目录
-2. 生成带有正确绝对路径的配置文件
-3. 开始训练
+2. 生成带有正确绝对路径的配置文件（`yolo_training_config_auto.yaml`）
+3. 使用生成的配置开始训练
+
+**注意**：
+- 模板文件：`yolo_training_config.yaml`（相对路径，保存在仓库中）
+- 生成的文件：`yolo_training_config_auto.yaml`（绝对路径，自动生成，不提交到git）
 
 ### 方法2：手动生成配置
 
@@ -29,7 +33,12 @@
 python generate_config.py
 ```
 
-这会生成 `yolo_training_config.yaml`，包含你系统的正确路径。
+这会生成 `yolo_training_config_auto.yaml`，包含你系统的正确路径。
+
+然后使用生成的配置训练：
+```bash
+python train_yolov8_teeth.py --data yolo_training_config_auto.yaml
+```
 
 ## 使用说明
 
