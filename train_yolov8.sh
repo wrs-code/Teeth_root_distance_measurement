@@ -19,6 +19,17 @@ BATCH=10
 IMGSZ=640
 DEVICE="0"
 
+# Generate config file with absolute paths for current user
+echo "Generating configuration file with absolute paths..."
+if [ -f "generate_config.py" ]; then
+    python generate_config.py
+    if [ $? -ne 0 ]; then
+        echo "ERROR: Failed to generate configuration file"
+        exit 1
+    fi
+fi
+echo ""
+
 # Check if data.yaml exists
 if [ ! -f "$DATA_YAML" ]; then
     echo "ERROR: Data configuration file not found: $DATA_YAML"
