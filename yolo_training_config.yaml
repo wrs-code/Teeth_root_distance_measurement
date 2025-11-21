@@ -2,8 +2,8 @@
 # Dataset: UFBA-425 (Roboflow version with augmentation)
 # Total images: 1022 (894 train, 64 valid, 64 test)
 
-# Paths (absolute paths)
-path: /home/user/Teeth_root_distance_measurement/Instance_seg_teeth/Dataset/yolo_train_dataset
+# Paths (relative paths - works for any user)
+path: ./Instance_seg_teeth/Dataset/yolo_train_dataset
 train: train/images
 val: valid/images
 test: test/images
