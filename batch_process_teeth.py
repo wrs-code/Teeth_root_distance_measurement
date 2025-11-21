@@ -141,6 +141,74 @@ class TeethBatchProcessor:
         image_clahe = (image_clahe * 255).astype(image.dtype)
         return image_clahe
 
+    def draw_detections(self, image_path, result):
+        """
+        Draw bounding boxes on image (compatible with ultralytics 8.0.28)
+
+        Args:
+            image_path: Path to original image
+            result: YOLO detection result object
+
+        Returns:
+            Image with drawn detections
+        """
+        # Read original image
+        img = cv2.imread(image_path)
+
+        # Get boxes from result
+        if result.boxes is None or len(result.boxes) == 0:
+            return img
+
+        boxes = result.boxes
+
+        # Draw each detection
+        for i in range(len(boxes)):
+            # Get box coordinates (xyxy format)
+            box = boxes.xyxy[i].cpu().numpy()
+            x1, y1, x2, y2 = map(int, box)
+
+            # Get class and confidence
+            cls = int(boxes.cls[i].cpu().numpy())
+            conf = float(boxes.conf[i].cpu().numpy())
+
+            # Draw rectangle
+            color = (0, 255, 0)  # Green
+            thickness = 2
+            cv2.rectangle(img, (x1, y1), (x2, y2), color, thickness)
+
+            # Draw label
+            label = f'Class {cls}: {conf:.2f}'
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            font_scale = 0.5
+            font_thickness = 1
+
+            # Get text size for background
+            (text_width, text_height), baseline = cv2.getTextSize(
+                label, font, font_scale, font_thickness
+            )
+
+            # Draw background rectangle for text
+            cv2.rectangle(
+                img,
+                (x1, y1 - text_height - baseline - 5),
+                (x1 + text_width, y1),
+                color,
+                -1
+            )
+
+            # Draw text
+            cv2.putText(
+                img,
+                label,
+                (x1, y1 - baseline - 5),
+                font,
+                font_scale,
+                (0, 0, 0),  # Black text
+                font_thickness
+            )
+
+        return img
+
     def process_yolo_detection(self, image_path, image_name):
         """
         Process image with YOLO detection
@@ -176,7 +244,8 @@ class TeethBatchProcessor:
 
         # Save detection visualization
         if len(results) > 0:
-            result_img = results[0].plot()
+            # Draw detections on image (compatible with ultralytics 8.0.28)
+            result_img = self.draw_detections(image_path, results[0])
             output_path = os.path.join(self.output_dir, 'yolo_visualizations', f'{image_name}_detection.jpg')
             cv2.imwrite(output_path, result_img)
             self.log(f"  Saved detection visualization to {output_path}")
